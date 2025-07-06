@@ -1,1 +1,659 @@
-# tax-residence
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Malaysia Tax Residency Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .game-content {
+            padding: 40px;
+        }
+        
+        .level-selector {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 40px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .level-btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 150px;
+        }
+        
+        .level-btn.easy {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .level-btn.medium {
+            background: #FF9800;
+            color: white;
+        }
+        
+        .level-btn.hard {
+            background: #F44336;
+            color: white;
+        }
+        
+        .level-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+        
+        .level-btn.active {
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+        
+        .question-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border-left: 5px solid #2a5298;
+            display: none;
+        }
+        
+        .question-card.active {
+            display: block;
+            animation: slideIn 0.5s ease;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .question-number {
+            color: #2a5298;
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+        }
+        
+        .question-text {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            margin-bottom: 25px;
+            color: #333;
+        }
+        
+        .options {
+            display: grid;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .option {
+            padding: 15px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+        }
+        
+        .option:hover {
+            border-color: #2a5298;
+            background: #f0f4ff;
+        }
+        
+        .option.selected {
+            border-color: #2a5298;
+            background: #2a5298;
+            color: white;
+        }
+        
+        .option.correct {
+            border-color: #4CAF50;
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .option.incorrect {
+            border-color: #F44336;
+            background: #F44336;
+            color: white;
+        }
+        
+        .submit-btn {
+            background: #2a5298;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 15px;
+        }
+        
+        .submit-btn:hover {
+            background: #1e3c72;
+            transform: translateY(-2px);
+        }
+        
+        .submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .next-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: none;
+        }
+        
+        .next-btn:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+        }
+        
+        .feedback {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            display: none;
+        }
+        
+        .feedback.correct {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .feedback.incorrect {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .score-board {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 30px;
+            display: none;
+        }
+        
+        .score-board.show {
+            display: block;
+        }
+        
+        .score {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2a5298;
+            margin-bottom: 10px;
+        }
+        
+        .law-reference {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: #856404;
+        }
+        
+        .restart-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+        
+        .restart-btn:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .game-content {
+                padding: 20px;
+            }
+            
+            .level-selector {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .level-btn {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🇲🇾 Malaysia Tax Residency Game</h1>
+            <p>Test your knowledge of Section 7(1) Income Tax Act 1967</p>
+        </div>
+        
+        <div class="game-content">
+            <div class="level-selector">
+                <button class="level-btn easy" onclick="selectLevel('easy')">
+                    🟢 Easy Level
+                </button>
+                <button class="level-btn medium" onclick="selectLevel('medium')">
+                    🟡 Medium Level
+                </button>
+                <button class="level-btn hard" onclick="selectLevel('hard')">
+                    🔴 Hard Level
+                </button>
+            </div>
+            
+            <div class="score-board" id="scoreBoard">
+                <div class="score" id="scoreDisplay">0/0</div>
+                <p>Select a difficulty level to start playing!</p>
+            </div>
+            
+            <div id="questionContainer"></div>
+            
+            <div style="text-align: center;">
+                <button class="restart-btn" onclick="restartGame()" style="display: none;" id="restartBtn">
+                    🔄 Play Again
+                </button>
+                <button class="restart-btn" onclick="downloadGame()" style="background: #28a745; margin-left: 15px;">
+                    💾 Download Game
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentLevel = '';
+        let currentQuestion = 0;
+        let score = 0;
+        let selectedAnswer = null;
+        let gameQuestions = [];
+
+        const questions = {
+            easy: [
+                {
+                    question: "Ahmad was physically present in Malaysia for 200 consecutive days in 2023. What is his tax residency status for 2023?",
+                    options: [
+                        "Resident under Sec.7(1)(a)",
+                        "Resident under Sec.7(1)(b)",
+                        "Resident under Sec.7(1)(c)",
+                        "Resident under Sec.7(1)(d)",
+                        "Non-Resident"
+                    ],
+                    correct: 0,
+                    explanation: "Under Section 7(1)(a), he is resident as he was physically present for 182+ consecutive days in that year.",
+                    lawRef: "Sec.7(1)(a): Physical presence for at least 182 days in consecutive period(s) in that year"
+                },
+                {
+                    question: "Sarah was present in Malaysia from 15 May 2023 to 11 Oct 2023 (150 days) in 2023. In 2024, she will be present from 20 Dec 2023 to 25 July 2024 (218 consecutive days including temporary absence). What is her 2023 tax residency status?",
+                    options: [
+                        "Resident under Sec.7(1)(a)",
+                        "Resident under Sec.7(1)(b)",
+                        "Resident under Sec.7(1)(c)",
+                        "Resident under Sec.7(1)(d)",
+                        "Non-Resident"
+                    ],
+                    correct: 1,
+                    explanation: "Under Section 7(1)(b), she is resident in 2023 because although present less than 182 days in 2023, her stay is connected to the following year (2024) which has 218 consecutive days counted from 1 January 2024. The connection occurs through the overlapping period from 20 Dec 2023.",
+                    lawRef: "Sec.7(1)(b): Connected years - 182+ days counted from 1 Jan (following year) or from Dec (preceding year)"
+                },
+                {
+                    question: "John was present in Malaysia for 95 days in 2023. In the 4 preceding years (2019-2022), he was resident in 3 of those years. What is his 2023 tax residency status?",
+                    options: [
+                        "Resident under Sec.7(1)(a)",
+                        "Resident under Sec.7(1)(b)",
+                        "Resident under Sec.7(1)(c)",
+                        "Resident under Sec.7(1)(d)",
+                        "Non-Resident"
+                    ],
+                    correct: 2,
+                    explanation: "Under Section 7(1)(c), he is resident as he was present 90+ days in 2023 AND was resident in 3 out of 4 immediately preceding years.",
+                    lawRef: "Sec.7(1)(c): 90+ days + resident in 3 of 4 immediately preceding years"
+                }
+            ],
+            medium: [
+                {
+                    question: "Lisa was present in Malaysia from 1 Aug 2023 to 28 Nov 2023 (120 days) in 2023. In 2024, she will be present from 15 Nov 2023 to 15 June 2024 (198 days physical presence + 15 days temporary absence for attending a conference). What is her 2023 tax residency status?",
+                    options: [
+                        "Resident under Sec.7(1)(a)",
+                        "Resident under Sec.7(1)(b)",
+                        "Resident under Sec.7(1)(c)",
+                        "Resident under Sec.7(1)(d)",
+                        "Non-Resident"
+                    ],
+                    correct: 1,
+                    explanation: "Under Sec.7(1)(b), she is resident in 2023 because her stay is connected to the following year (2024) which has 213 consecutive days (198 physical + 15 temporary absence for conference) counted from 1 January 2024, exceeding 182 days. The connection occurs through the overlapping period from 15-28 Nov 2023.",
+                    lawRef: "Sec.7(1)(b): Connected years - 182+ days counted from 1 Jan (following year) or from Dec (preceding year)"
+                },
+                {
+                    question: "David was present for 95 days in 2023. In the preceding 4 years: 2019 (resident), 2020 (non-resident), 2021 (resident), 2022 (resident). What is his 2023 status?",
+                    options: [
+                        "Resident under Sec.7(1)(a)",
+                        "Resident under Sec.7(1)(b)",
+                        "Resident under Sec.7(1)(c)",
+                        "Resident under Sec.7(1)(d)",
+                        "Non-Resident"
+                    ],
+                    correct: 2,
+                    explanation: "Under Sec.7(1)(c), he is resident as he was present 90+ days in 2023 AND was resident in 3 out of 4 immediately preceding years (2019, 2021, 2022).",
+                    lawRef: "Sec.7(1)(c): 90+ days + resident in 3 of 4 immediately preceding years"
+                },
+                {
+                    question: "Maria was present for 60 days in 2023. She was resident in 2020, 2021, 2022, and will be resident in 2024. What is her 2023 tax residency status?",
+                    options: [
+                        "Resident under Sec.7(1)(a)",
+                        "Resident under Sec.7(1)(b)",
+                        "Resident under Sec.7(1)(c)",
+                        "Resident under Sec.7(1)(d)",
+                        "Non-Resident"
+                    ],
+                    correct: 3,
+                    explanation: "Under Sec.7(1)(d), she is resident in 2023 even with less than 90 days because she is resident in the following year (2024) AND was resident in the immediate 3 preceding years (2020, 2021, 2022).",
+                    lawRef: "Sec.7(1)(d): Can be less than 90 days if resident in following year + 3 preceding years"
+                }
+            ],
+            hard: [
+                {
+                    question: "Complex scenario: Alex was present from 1 Mar 2022 to 28 Aug 2022 (150 days), then from 10 Oct 2023 to 17 Jan 2024 (100 days), and will continue from 15 Jan 2024 to 25 Aug 2024 (160 days physical + 25 days temporary absence: 10 days ill-health + 15 days social visits). Analyze his 2023 residency status.",
+                    options: [
+                        "Resident under Sec.7(1)(a)",
+                        "Resident under Sec.7(1)(b)",
+                        "Resident under Sec.7(1)(c)",
+                        "Resident under Sec.7(1)(d)",
+                        "Non-Resident"
+                    ],
+                    correct: 4,
+                    explanation: "He is Non-Resident in 2023. Although his 2023 stay connects to 2024, the 2024 period only totals 174 consecutive days (160 physical + 10 ill-health + 14 social visits, as social visits are capped at 14 days) counted from 1 January 2024, which is less than the required 182 days for Sec.7(1)(b).",
+                    lawRef: "Sec.7(1)(b): Connected years - 182+ days counted from 1 Jan (following year) or from Dec (preceding year)"
+                },
+                {
+                    question: "Technical scenario: Emma was present 80 days in 2023. She will be resident in 2024 under Sec.7(1)(a), and was resident in 2020, 2021, and 2022. What is her 2023 tax residency status?",
+                    options: [
+                        "Resident under Sec.7(1)(a)",
+                        "Resident under Sec.7(1)(b)",
+                        "Resident under Sec.7(1)(c)",
+                        "Resident under Sec.7(1)(d)",
+                        "Non-Resident"
+                    ],
+                    correct: 3,
+                    explanation: "Under Sec.7(1)(d), she is resident in 2023 even with less than 90 days because she is resident in the following year (2024) AND was resident in the immediate 3 preceding years (2020, 2021, 2022).",
+                    lawRef: "Sec.7(1)(d): Can be <90 days if resident in following year + 3 preceding years"
+                },
+                {
+                    question: "Edge case: Ben was present 95 days in 2020, 0 days in 2021, 85 days in 2022, 30 days in 2023, and will be resident in 2024. His residency pattern: 2020 (resident), 2021 (resident under 7(1)(d)), 2022 (non-resident). What is his 2023 status?",
+                    options: [
+                        "Resident under Sec.7(1)(a)",
+                        "Resident under Sec.7(1)(b)",
+                        "Resident under Sec.7(1)(c)",
+                        "Resident under Sec.7(1)(d)",
+                        "Non-Resident"
+                    ],
+                    correct: 4,
+                    explanation: "He cannot qualify under Sec.7(1)(d) because although he will be resident in 2024, he was NOT resident in all 3 immediate preceding years (2020: resident, 2021: resident, 2022: non-resident). The chain is broken.",
+                    lawRef: "Sec.7(1)(d): Requires residency in ALL 3 immediate preceding years"
+                }
+            ]
+        };
+
+        function selectLevel(level) {
+            currentLevel = level;
+            currentQuestion = 0;
+            score = 0;
+            selectedAnswer = null;
+            
+            // Update button states
+            document.querySelectorAll('.level-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`.level-btn.${level}`).classList.add('active');
+            
+            // Get questions for selected level
+            gameQuestions = [...questions[level]];
+            
+            // Show score board
+            document.getElementById('scoreBoard').classList.add('show');
+            updateScore();
+            
+            // Start the game
+            showQuestion();
+        }
+
+        function showQuestion() {
+            if (currentQuestion >= gameQuestions.length) {
+                showFinalScore();
+                return;
+            }
+
+            const question = gameQuestions[currentQuestion];
+            const container = document.getElementById('questionContainer');
+            
+            container.innerHTML = `
+                <div class="question-card active">
+                    <div class="question-number">Question ${currentQuestion + 1} of ${gameQuestions.length}</div>
+                    <div class="question-text">${question.question}</div>
+                    <div class="options">
+                        ${question.options.map((option, index) => 
+                            `<div class="option" onclick="selectOption(${index})">${option}</div>`
+                        ).join('')}
+                    </div>
+                    <button class="submit-btn" onclick="submitAnswer()" disabled>Submit Answer</button>
+                    <button class="next-btn" onclick="nextQuestion()">Next Question</button>
+                    <div class="feedback" id="feedback"></div>
+                </div>
+            `;
+            
+            selectedAnswer = null;
+        }
+
+        function selectOption(index) {
+            selectedAnswer = index;
+            
+            // Update option styles
+            document.querySelectorAll('.option').forEach((opt, i) => {
+                opt.classList.remove('selected');
+                if (i === index) {
+                    opt.classList.add('selected');
+                }
+            });
+            
+            // Enable submit button
+            document.querySelector('.submit-btn').disabled = false;
+        }
+
+        function submitAnswer() {
+            if (selectedAnswer === null) return;
+            
+            const question = gameQuestions[currentQuestion];
+            const isCorrect = selectedAnswer === question.correct;
+            
+            if (isCorrect) {
+                score++;
+            }
+            
+            // Update option styles to show correct/incorrect
+            document.querySelectorAll('.option').forEach((opt, i) => {
+                if (i === question.correct) {
+                    opt.classList.add('correct');
+                } else if (i === selectedAnswer && !isCorrect) {
+                    opt.classList.add('incorrect');
+                }
+                opt.style.pointerEvents = 'none';
+            });
+            
+            // Show feedback
+            const feedback = document.getElementById('feedback');
+            feedback.className = `feedback ${isCorrect ? 'correct' : 'incorrect'}`;
+            feedback.style.display = 'block';
+            feedback.innerHTML = `
+                <strong>${isCorrect ? '✅ Correct!' : '❌ Incorrect'}</strong>
+                <p>${question.explanation}</p>
+                <div class="law-reference">
+                    <strong>Legal Reference:</strong> ${question.lawRef}
+                </div>
+            `;
+            
+            // Hide submit button, show next button
+            document.querySelector('.submit-btn').style.display = 'none';
+            document.querySelector('.next-btn').style.display = 'inline-block';
+            
+            updateScore();
+        }
+
+        function nextQuestion() {
+            currentQuestion++;
+            showQuestion();
+        }
+
+        function updateScore() {
+            document.getElementById('scoreDisplay').textContent = `${score}/${gameQuestions.length}`;
+        }
+
+        function showFinalScore() {
+            const container = document.getElementById('questionContainer');
+            const percentage = Math.round((score / gameQuestions.length) * 100);
+            let message = '';
+            let emoji = '';
+            
+            if (percentage >= 80) {
+                message = 'Excellent! You have a strong understanding of Malaysian tax residency rules.';
+                emoji = '🏆';
+            } else if (percentage >= 60) {
+                message = 'Good job! You have a decent grasp of the concepts.';
+                emoji = '👍';
+            } else {
+                message = 'Keep studying! Review the Income Tax Act 1967 Section 7(1).';
+                emoji = '📚';
+            }
+            
+            container.innerHTML = `
+                <div class="question-card active" style="text-align: center;">
+                    <h2>${emoji} Game Complete!</h2>
+                    <div class="score" style="font-size: 3rem; margin: 20px 0;">${score}/${gameQuestions.length}</div>
+                    <div style="font-size: 2rem; margin-bottom: 20px;">${percentage}%</div>
+                    <p style="font-size: 1.2rem; margin-bottom: 30px;">${message}</p>
+                    
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; text-align: left; margin-top: 30px;">
+                        <h3>📖 Section 7(1) Summary:</h3>
+                        <p style="margin-bottom: 15px;"><em>Malaysian tax residency is based on physical presence and specific linking conditions.</em></p>
+                        <ul style="margin-top: 15px; line-height: 1.8;">
+                            <li><strong>(a)</strong> Physical presence 182+ in a consecutive period or multiple periods in that year = Resident</li>
+                            <li><strong>(b)</strong> Physical presence <182 days BUT linked by preceding year OR linked to following year with 182+ consecutive days (including temporary absence) = Resident</li>
+                            <li><strong>(c)</strong> Physical presence 90+ days + resident in 3 of 4 immediately preceding years = Resident</li>
+                            <li><strong>(d)</strong> Physical presence <90 days (or none) + resident in following year + resident in immediate 3 preceding years = Resident</li>
+                        </ul>
+                        <p style="margin-top: 15px; font-size: 0.9rem; color: #666;"><strong>Temporary Absence:</strong> Service matters, conferences, ill-health, social visits (max 14 days)</p>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('restartBtn').style.display = 'inline-block';
+        }
+
+        function restartGame() {
+            currentLevel = '';
+            currentQuestion = 0;
+            score = 0;
+            selectedAnswer = null;
+            gameQuestions = [];
+            
+            // Reset UI
+            document.querySelectorAll('.level-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('scoreBoard').classList.remove('show');
+            document.getElementById('questionContainer').innerHTML = '';
+            document.getElementById('restartBtn').style.display = 'none';
+        }
+
+        function downloadGame() {
+            // Get the current HTML content
+            const htmlContent = document.documentElement.outerHTML;
+            
+            // Create a blob with the HTML content
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            
+            // Create a download link
+            const downloadLink = document.createElement('a');
+            downloadLink.href = URL.createObjectURL(blob);
+            downloadLink.download = 'malaysia-tax-residency-game.html';
+            
+            // Trigger the download
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+            
+            // Clean up the object URL
+            URL.revokeObjectURL(downloadLink.href);
+        }
+
+        // Initialize the game
+        document.getElementById('scoreBoard').classList.add('show');
+        document.getElementById('scoreDisplay').textContent = '0/0';
+    </script>
+</body>
+</html>
